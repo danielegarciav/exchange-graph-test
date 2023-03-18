@@ -38,10 +38,10 @@ impl ExchangeGraph {
         .values()
         .filter_map(|rate| match rate {
           _ if rate.from_curr == current_curr_id && !visited.contains(&rate.to_curr) => {
-            Some((rate.id, rate.to_curr, false))
+            Some((rate.to_curr, rate.id, false))
           }
           _ if rate.to_curr == current_curr_id && !visited.contains(&rate.from_curr) => {
-            Some((rate.id, rate.from_curr, true))
+            Some((rate.from_curr, rate.id, true))
           }
           _ => None,
         })
@@ -49,7 +49,8 @@ impl ExchangeGraph {
         .sorted_unstable_by(|(_, _, is_a_backwards), (_, _, is_b_backwards)| {
           Ord::cmp(is_b_backwards, is_a_backwards)
         })
-        .map(|(next_rate_id, next_curr_id, backwards)| {
+        .unique_by(|(next_curr_id, _, _)| *next_curr_id)
+        .map(|(next_curr_id, next_rate_id, backwards)| {
           let mut new_breadcrumbs = breadcrumbs_so_far.clone();
 
           new_breadcrumbs.push(RateBreadcrumb {
