@@ -82,10 +82,6 @@ pub fn format_step(graph: &ExchangeGraph, step: &ExchangeStep) -> String {
   }
 }
 
-pub fn format_path(graph: &ExchangeGraph, path: &ExchangePath) -> String {
-  path
-    .steps
-    .iter()
-    .map(|step| format_step(graph, step))
-    .join(", ")
+pub fn format_steps(graph: &ExchangeGraph, steps: &[ExchangeStep]) -> String {
+  steps.iter().map(|step| format_step(graph, step)).join(", ")
 }

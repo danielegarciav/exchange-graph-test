@@ -2,7 +2,7 @@ pub mod exchange_graph;
 pub mod test_values;
 pub mod types;
 
-use crate::exchange_graph::{format_path, ExchangeGraph};
+use crate::exchange_graph::{format_steps, ExchangeGraph};
 
 fn main() {
   let graph = ExchangeGraph::new_test_graph();
@@ -16,7 +16,7 @@ fn main() {
     }
 
     let to = graph.get_currency_by_id(&path.target_currency).unwrap();
-    println!("...to {}: {}", to.code, format_path(&graph, &path));
+    println!("...to {}: {}", to.code, format_steps(&graph, &path.steps));
   }
 }
 
