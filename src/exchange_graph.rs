@@ -38,30 +38,26 @@ impl ExchangeGraph {
         .values()
         .filter_map(|rate| match rate {
           _ if rate.from_curr == current_curr_id && !visited.contains(&rate.to_curr) => {
-            Some((rate, false))
+            Some((rate.id, rate.to_curr, false))
           }
           _ if rate.to_curr == current_curr_id && !visited.contains(&rate.from_curr) => {
-            Some((rate, true))
+            Some((rate.id, rate.from_curr, true))
           }
           _ => None,
         })
         // direct steps take priority
-        .sorted_unstable_by(|(_, is_a_backwards), (_, is_b_backwards)| {
+        .sorted_unstable_by(|(_, _, is_a_backwards), (_, _, is_b_backwards)| {
           Ord::cmp(is_b_backwards, is_a_backwards)
         })
-        .map(|(next_rate, backwards)| {
-          let next_curr = match backwards {
-            false => next_rate.to_curr,
-            true => next_rate.from_curr,
-          };
-
+        .map(|(next_rate_id, next_curr_id, backwards)| {
           let mut new_breadcrumbs = breadcrumbs_so_far.clone();
+
           new_breadcrumbs.push(RateBreadcrumb {
-            rate_id: next_rate.id,
+            rate_id: next_rate_id,
             backwards,
           });
 
-          (next_curr, new_breadcrumbs)
+          (next_curr_id, new_breadcrumbs)
         });
 
       queue.extend(next_steps);
