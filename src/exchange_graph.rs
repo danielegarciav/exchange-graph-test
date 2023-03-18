@@ -79,11 +79,10 @@ pub fn format_breadcrumb(graph: &ExchangeGraph, b: &RateBreadcrumb) -> String {
   let rate_edge = graph.rates.get(&b.rate_id).unwrap();
   let from_code = graph.get_currency_code(rate_edge.from_curr).unwrap();
   let to_code = graph.get_currency_code(rate_edge.to_curr).unwrap();
-  let arrow = match b.backwards {
-    false => "->",
-    true => "<-",
-  };
-  format!("{} {} {}", from_code, arrow, to_code)
+  match b.backwards {
+    false => format!("{} -> {}", from_code, to_code),
+    true => format!("{} => {}", to_code, from_code),
+  }
 }
 
 pub fn format_path(graph: &ExchangeGraph, path: &ExchangePath) -> String {
