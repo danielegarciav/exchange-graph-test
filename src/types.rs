@@ -16,7 +16,7 @@ pub struct RateRelation {
 }
 
 #[derive(Clone, Debug)]
-pub struct RateBreadcrumb {
+pub struct ExchangeStep {
   pub rate_id: RateId,
   pub backwards: bool,
 }
@@ -24,5 +24,5 @@ pub struct RateBreadcrumb {
 #[derive(Debug)]
 pub struct ExchangePath {
   pub target_currency: CurrencyId,
-  pub breadcrumbs: Vec<RateBreadcrumb>,
+  pub steps: Vec<ExchangeStep>,
 }

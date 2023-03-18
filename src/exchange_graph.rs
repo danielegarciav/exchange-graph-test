@@ -1,5 +1,5 @@
 use crate::test_values::{test_currencies_iter, test_rates_iter};
-use crate::types::{Currency, CurrencyId, ExchangePath, RateBreadcrumb, RateId, RateRelation};
+use crate::types::{Currency, CurrencyId, ExchangePath, ExchangeStep, RateId, RateRelation};
 use itertools::Itertools;
 use std::collections::{HashMap, HashSet, VecDeque};
 
@@ -26,14 +26,14 @@ impl ExchangeGraph {
 
   pub fn compute_all_paths(&self, root_curr_id: CurrencyId) -> Vec<ExchangePath> {
     let mut result = Vec::new();
-    let mut queue: VecDeque<(CurrencyId, Vec<RateBreadcrumb>)> = VecDeque::new();
+    let mut queue: VecDeque<(CurrencyId, Vec<ExchangeStep>)> = VecDeque::new();
     let mut visited: HashSet<CurrencyId> = HashSet::new();
     queue.push_back((root_curr_id, vec![]));
 
-    while let Some((current_curr_id, breadcrumbs_so_far)) = queue.pop_front() {
+    while let Some((current_curr_id, steps_so_far)) = queue.pop_front() {
       visited.insert(current_curr_id);
 
-      let next_steps = self
+      let next_steps_to_enqueue = self
         .rates
         .values()
         .filter_map(|rate| match rate {
@@ -51,32 +51,32 @@ impl ExchangeGraph {
         })
         .unique_by(|(next_curr_id, _, _)| *next_curr_id)
         .map(|(next_curr_id, next_rate_id, backwards)| {
-          let mut new_breadcrumbs = breadcrumbs_so_far.clone();
+          let mut new_step_list = steps_so_far.clone();
 
-          new_breadcrumbs.push(RateBreadcrumb {
+          new_step_list.push(ExchangeStep {
             rate_id: next_rate_id,
             backwards,
           });
 
-          (next_curr_id, new_breadcrumbs)
+          (next_curr_id, new_step_list)
         });
 
-      queue.extend(next_steps);
+      queue.extend(next_steps_to_enqueue);
 
       result.push(ExchangePath {
         target_currency: current_curr_id,
-        breadcrumbs: breadcrumbs_so_far,
+        steps: steps_so_far,
       });
     }
     result
   }
 }
 
-pub fn format_breadcrumb(graph: &ExchangeGraph, b: &RateBreadcrumb) -> String {
-  let rate_edge = graph.rates.get(&b.rate_id).unwrap();
+pub fn format_step(graph: &ExchangeGraph, step: &ExchangeStep) -> String {
+  let rate_edge = graph.rates.get(&step.rate_id).unwrap();
   let from_code = graph.get_currency_code(rate_edge.from_curr).unwrap();
   let to_code = graph.get_currency_code(rate_edge.to_curr).unwrap();
-  match b.backwards {
+  match step.backwards {
     false => format!("{} -> {}", from_code, to_code),
     true => format!("{} => {}", to_code, from_code),
   }
@@ -84,8 +84,8 @@ pub fn format_breadcrumb(graph: &ExchangeGraph, b: &RateBreadcrumb) -> String {
 
 pub fn format_path(graph: &ExchangeGraph, path: &ExchangePath) -> String {
   path
-    .breadcrumbs
+    .steps
     .iter()
-    .map(|b| format_breadcrumb(graph, b))
+    .map(|step| format_step(graph, step))
     .join(", ")
 }
