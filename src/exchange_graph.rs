@@ -73,9 +73,9 @@ impl ExchangeGraph {
 }
 
 pub fn format_step(graph: &ExchangeGraph, step: &ExchangeStep) -> String {
-  let rate_edge = graph.rates.get(&step.rate_id).unwrap();
-  let from_code = graph.get_currency_code(rate_edge.from_currency).unwrap();
-  let to_code = graph.get_currency_code(rate_edge.to_currency).unwrap();
+  let rate_rel = graph.rates.get(&step.rate_id).unwrap();
+  let from_code = graph.get_currency_code(rate_rel.from_currency).unwrap();
+  let to_code = graph.get_currency_code(rate_rel.to_currency).unwrap();
   match step.direction {
     StepDirection::Direct => format!("{} -> {}", from_code, to_code),
     StepDirection::Inverse => format!("{} => {}", to_code, from_code),
