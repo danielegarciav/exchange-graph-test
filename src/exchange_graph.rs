@@ -44,7 +44,6 @@ impl ExchangeGraph {
         .values()
         .filter_map(|rate| match rate {
           _ if rate.from_curr == current_curr_id && !visited.contains(&rate.to_curr) => {
-            visited.insert(current_curr_id);
             Some((rate, false))
           }
           _ if rate.to_curr == current_curr_id && !visited.contains(&rate.from_curr) => {
