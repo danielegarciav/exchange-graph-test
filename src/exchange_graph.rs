@@ -36,18 +36,18 @@ impl ExchangeGraph {
     let mut visited: HashSet<CurrencyId> = HashSet::new();
     queue.push_back((root_curr_id, vec![]));
 
-    while let Some((currency_curr_id, breadcrumbs_so_far)) = queue.pop_front() {
-      visited.insert(currency_curr_id);
+    while let Some((current_curr_id, breadcrumbs_so_far)) = queue.pop_front() {
+      visited.insert(current_curr_id);
 
       let next_steps = self
         .rates
         .values()
         .filter_map(|rate| match rate {
-          _ if rate.from_curr == currency_curr_id && !visited.contains(&rate.to_curr) => {
-            visited.insert(currency_curr_id);
+          _ if rate.from_curr == current_curr_id && !visited.contains(&rate.to_curr) => {
+            visited.insert(current_curr_id);
             Some((rate, false))
           }
-          _ if rate.to_curr == currency_curr_id && !visited.contains(&rate.from_curr) => {
+          _ if rate.to_curr == current_curr_id && !visited.contains(&rate.from_curr) => {
             Some((rate, true))
           }
           _ => None,
@@ -74,7 +74,7 @@ impl ExchangeGraph {
       queue.extend(next_steps);
 
       result.push(ExchangePath {
-        target_currency: currency_curr_id,
+        target_currency: current_curr_id,
         breadcrumbs: breadcrumbs_so_far,
       });
     }
