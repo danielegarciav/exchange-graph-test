@@ -1,5 +1,7 @@
 use crate::test_values::{test_currencies_iter, test_rates_iter};
-use crate::types::{Currency, CurrencyId, ExchangePath, ExchangeStep, RateId, RateRelation};
+use crate::types::{
+  Currency, CurrencyId, ExchangePath, ExchangeStep, RateId, RateRelation, StepDirection,
+};
 use itertools::Itertools;
 use std::collections::{HashMap, HashSet, VecDeque};
 
@@ -38,24 +40,22 @@ impl ExchangeGraph {
         .values()
         .filter_map(|rate| match rate {
           _ if rate.from_curr == current_curr_id && !visited.contains(&rate.to_curr) => {
-            Some((rate.to_curr, rate.id, false))
+            Some((rate.to_curr, rate.id, StepDirection::Direct))
           }
           _ if rate.to_curr == current_curr_id && !visited.contains(&rate.from_curr) => {
-            Some((rate.from_curr, rate.id, true))
+            Some((rate.from_curr, rate.id, StepDirection::Inverse))
           }
           _ => None,
         })
         // direct steps take priority
-        .sorted_unstable_by(|(_, _, is_a_backwards), (_, _, is_b_backwards)| {
-          Ord::cmp(is_b_backwards, is_a_backwards)
-        })
+        .sorted_unstable_by_key(|(_, _, direction)| *direction)
         .unique_by(|(next_curr_id, _, _)| *next_curr_id)
-        .map(|(next_curr_id, next_rate_id, backwards)| {
+        .map(|(next_curr_id, next_rate_id, direction)| {
           let mut new_step_list = steps_so_far.clone();
 
           new_step_list.push(ExchangeStep {
             rate_id: next_rate_id,
-            backwards,
+            direction,
           });
 
           (next_curr_id, new_step_list)
@@ -76,9 +76,9 @@ pub fn format_step(graph: &ExchangeGraph, step: &ExchangeStep) -> String {
   let rate_edge = graph.rates.get(&step.rate_id).unwrap();
   let from_code = graph.get_currency_code(rate_edge.from_curr).unwrap();
   let to_code = graph.get_currency_code(rate_edge.to_curr).unwrap();
-  match step.backwards {
-    false => format!("{} -> {}", from_code, to_code),
-    true => format!("{} => {}", to_code, from_code),
+  match step.direction {
+    StepDirection::Direct => format!("{} -> {}", from_code, to_code),
+    StepDirection::Inverse => format!("{} => {}", to_code, from_code),
   }
 }
 

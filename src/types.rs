@@ -15,10 +15,16 @@ pub struct RateRelation {
   pub rate: f64,
 }
 
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub enum StepDirection {
+  Direct,
+  Inverse,
+}
+
 #[derive(Clone, Debug)]
 pub struct ExchangeStep {
   pub rate_id: RateId,
-  pub backwards: bool,
+  pub direction: StepDirection,
 }
 
 #[derive(Debug)]
