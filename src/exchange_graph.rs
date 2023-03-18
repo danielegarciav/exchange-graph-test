@@ -1,4 +1,4 @@
-use crate::test_values::{TEST_CURRENCIES, TEST_RATES};
+use crate::test_values::{test_currencies_iter, test_rates_iter};
 use crate::types::{Currency, CurrencyId, ExchangePath, RateBreadcrumb, RateId, RateRelation};
 use itertools::Itertools;
 use std::collections::{HashMap, HashSet, VecDeque};
@@ -11,14 +11,8 @@ pub struct ExchangeGraph {
 
 impl ExchangeGraph {
   pub fn new_test_graph() -> Self {
-    let currencies = HashMap::from_iter(
-      TEST_CURRENCIES
-        .iter()
-        .map(|c| c.into())
-        .map(|c: Currency| (c.id, c)),
-    );
-
-    let rates = HashMap::from_iter(TEST_RATES.iter().map(|c| (c.id, c.clone())));
+    let currencies = HashMap::from_iter(test_currencies_iter().map(|c| (c.id, c)));
+    let rates = HashMap::from_iter(test_rates_iter().map(|c| (c.id, c)));
     Self { currencies, rates }
   }
 

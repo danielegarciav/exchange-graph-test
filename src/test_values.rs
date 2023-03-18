@@ -15,6 +15,14 @@ impl From<&TestCurrency> for Currency {
   }
 }
 
+pub fn test_currencies_iter() -> impl Iterator<Item = Currency> {
+  TEST_CURRENCIES.iter().map(|x| x.into())
+}
+
+pub fn test_rates_iter() -> impl Iterator<Item = RateRelation> {
+  TEST_RATES.iter().cloned()
+}
+
 pub const TEST_CURRENCIES: &[TestCurrency] = &[
   TestCurrency { id: 0, code: "USD" },
   TestCurrency { id: 1, code: "CAD" },
