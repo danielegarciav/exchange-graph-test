@@ -26,31 +26,31 @@ impl ExchangeGraph {
     self.currencies.get(&id).map(|c| &c.code)
   }
 
-  pub fn compute_all_paths(&self, root_curr_id: CurrencyId) -> Vec<ExchangePath> {
+  pub fn compute_all_paths(&self, root_currency_id: CurrencyId) -> Vec<ExchangePath> {
     let mut result = Vec::new();
     let mut queue: VecDeque<(CurrencyId, Vec<ExchangeStep>)> = VecDeque::new();
     let mut visited: HashSet<CurrencyId> = HashSet::new();
-    queue.push_back((root_curr_id, vec![]));
+    queue.push_back((root_currency_id, vec![]));
 
-    while let Some((current_curr_id, steps_so_far)) = queue.pop_front() {
-      visited.insert(current_curr_id);
+    while let Some((active_currency_id, steps_so_far)) = queue.pop_front() {
+      visited.insert(active_currency_id);
 
       let next_steps_to_enqueue = self
         .rates
         .values()
         .filter_map(|rate| match rate {
-          _ if rate.from_curr == current_curr_id && !visited.contains(&rate.to_curr) => {
-            Some((rate.to_curr, rate.id, StepDirection::Direct))
+          _ if rate.from_currency == active_currency_id && !visited.contains(&rate.to_currency) => {
+            Some((rate.to_currency, rate.id, StepDirection::Direct))
           }
-          _ if rate.to_curr == current_curr_id && !visited.contains(&rate.from_curr) => {
-            Some((rate.from_curr, rate.id, StepDirection::Inverse))
+          _ if rate.to_currency == active_currency_id && !visited.contains(&rate.from_currency) => {
+            Some((rate.from_currency, rate.id, StepDirection::Inverse))
           }
           _ => None,
         })
         // direct steps take priority
         .sorted_unstable_by_key(|(_, _, direction)| *direction)
-        .unique_by(|(next_curr_id, _, _)| *next_curr_id)
-        .map(|(next_curr_id, next_rate_id, direction)| {
+        .unique_by(|(next_currency_id, _, _)| *next_currency_id)
+        .map(|(next_currency_id, next_rate_id, direction)| {
           let mut new_step_list = steps_so_far.clone();
 
           new_step_list.push(ExchangeStep {
@@ -58,13 +58,13 @@ impl ExchangeGraph {
             direction,
           });
 
-          (next_curr_id, new_step_list)
+          (next_currency_id, new_step_list)
         });
 
       queue.extend(next_steps_to_enqueue);
 
       result.push(ExchangePath {
-        target_currency: current_curr_id,
+        target_currency: active_currency_id,
         steps: steps_so_far,
       });
     }
@@ -74,8 +74,8 @@ impl ExchangeGraph {
 
 pub fn format_step(graph: &ExchangeGraph, step: &ExchangeStep) -> String {
   let rate_edge = graph.rates.get(&step.rate_id).unwrap();
-  let from_code = graph.get_currency_code(rate_edge.from_curr).unwrap();
-  let to_code = graph.get_currency_code(rate_edge.to_curr).unwrap();
+  let from_code = graph.get_currency_code(rate_edge.from_currency).unwrap();
+  let to_code = graph.get_currency_code(rate_edge.to_currency).unwrap();
   match step.direction {
     StepDirection::Direct => format!("{} -> {}", from_code, to_code),
     StepDirection::Inverse => format!("{} => {}", to_code, from_code),

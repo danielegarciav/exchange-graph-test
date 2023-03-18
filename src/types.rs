@@ -10,8 +10,8 @@ pub struct Currency {
 #[derive(Clone, Debug)]
 pub struct RateRelation {
   pub id: RateId,
-  pub from_curr: CurrencyId,
-  pub to_curr: CurrencyId,
+  pub from_currency: CurrencyId,
+  pub to_currency: CurrencyId,
   pub rate: f64,
 }
 

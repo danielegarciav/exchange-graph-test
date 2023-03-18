@@ -34,26 +34,26 @@ pub const TEST_CURRENCIES: &[TestCurrency] = &[
 pub const TEST_RATES: &[RateRelation] = &[
   RateRelation {
     id: 0,
-    from_curr: 0,
-    to_curr: 1,
+    from_currency: 0,
+    to_currency: 1,
     rate: 2.0,
   },
   RateRelation {
     id: 1,
-    from_curr: 1,
-    to_curr: 2,
+    from_currency: 1,
+    to_currency: 2,
     rate: 3.0,
   },
   RateRelation {
     id: 2,
-    from_curr: 2,
-    to_curr: 3,
+    from_currency: 2,
+    to_currency: 3,
     rate: 5.0,
   },
   RateRelation {
     id: 3,
-    from_curr: 4,
-    to_curr: 2,
+    from_currency: 4,
+    to_currency: 2,
     rate: 11.0,
   },
 ];
